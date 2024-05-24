@@ -1,40 +1,42 @@
 package ch.andri.m295lb.models;
 
-import ch.andri.m295lb.models.Author;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.Date;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "book")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString
+@Table(name = "Books", schema = "LB295")
 public class Book {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer bookID;
-    @Length(max = 255)
+
     private String title;
 
-    @Length(min = 1)
+    @Min(value = 1, message = "Book must have at least 1 page")
     private Integer pages;
 
-    @Column(name = "publicationDate")
+    @Temporal(TemporalType.TIMESTAMP)
     @PastOrPresent(message = "Publication date must be in the past or present.")
-    private LocalDateTime publicationDate;
+    private Date publicationDate;
+
+    @Digits(integer = 8, fraction = 2, message = "Price can't have more than 2 decimal places and 8 normal places")
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
     private Boolean available;
 
-    @JsonIgnore
-    @NotNull
-    @Column(name = "Author_AuthorID")
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Author authorID;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "Author_AuthorID")
+    private Author author;
 }

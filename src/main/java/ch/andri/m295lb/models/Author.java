@@ -2,27 +2,27 @@ package ch.andri.m295lb.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
-import org.hibernate.validator.constraints.Length;
-import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Set;
 
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "author")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString
+@Table(name = "Author", schema = "LB295")
 public class Author {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer autorID;
-    @Length(max = 45)
-    private String Name;
+    private Integer authorID;
 
+    private String name;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "author", fetch = FetchType.EAGER,
-            cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // Ignore this field during serialization
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Book> books;
 }
