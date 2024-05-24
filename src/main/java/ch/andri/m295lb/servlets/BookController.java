@@ -115,9 +115,9 @@ public class BookController {
 
     @POST
     @RolesAllowed({"ADMIN"})
-    @Path("/multiple")//todo path correcting
+    @Path("/multiple")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addBooks(@Valid List<Book> books) {//Mehrere neue Einträge
+    public Response addBooks(@Valid List<Book> books) {
         List<Book> conflictingBooks = new ArrayList<>();
         for (Book book : books) {
             if (bookRepository.findById(book.getBookID()).isPresent()) {
@@ -141,18 +141,18 @@ public class BookController {
     @PUT
     @RolesAllowed("ADMIN")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateBook(@Valid Book Book) {//Einen Eintrag aktualisieren
-        if (bookRepository.findById(Book.getBookID()).isPresent()) {
-            return saveOrUpdate(Book, "Update");
+    public Response updateBook(@Valid Book book) {
+        if (bookRepository.findById(book.getBookID()).isPresent()) {
+            return saveOrUpdate(book, "Update");
         }
-        throw new NotFoundException(String.format("Book with id %d doesn't exist.", Book.getBookID()));
+        throw new NotFoundException(String.format("Book with id %d doesn't exist.", book.getBookID()));
     }
 
     @DELETE
     @RolesAllowed("ADMIN")
     @Path("/{bookID}")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response deleteBook(@PathParam("bookID") @Valid Integer bookID) {//Datensatz mit ID löschen
+    public Response deleteBook(@PathParam("bookID") @Valid Integer bookID) {
         if (bookRepository.findById(bookID).isPresent()) {
             bookRepository.deleteById(bookID);
             logger.info("Deleting Book with number {}.", bookID);
@@ -165,7 +165,7 @@ public class BookController {
     @DELETE
     @RolesAllowed({"ADMIN"})
     @Produces(MediaType.TEXT_PLAIN)
-    public Response deleteAllBook() {//Alle Datensätze löschen
+    public Response deleteAllBook() {
         bookRepository.deleteAll();
         logger.info("Deleting all Books");
         return Response.status(Response.Status.OK).entity("Deleting all Books").build();
@@ -177,7 +177,9 @@ public class BookController {
             return Response.status(Response.Status.OK)
                     .entity(bookRepository.save(book)).build();
         } catch (Exception e) {
-            throw new InternalServerErrorException(e.getMessage());
+            // Analyze the exception and provide a more specific message
+            String message = "An error occurred during " + method + ": " + e.getMessage();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).build();
         }
     }
 
