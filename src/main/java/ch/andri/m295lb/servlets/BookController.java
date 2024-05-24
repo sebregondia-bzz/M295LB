@@ -64,10 +64,7 @@ public class BookController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllBook() {//Alle Datensätze lesen
         List<Book> books = bookRepository.findAll();
-        if (books.isEmpty()) {
-            throw new NotFoundException(String.format("No books are existing."));
-        }
-        logger.info("Returning all books: "+books);
+        logger.info("Returning all {} book/s.", books.size());
         return Response.status(Response.Status.OK).entity(books).build();
     }//http://localhost:8080/artifact/resources/book
 
@@ -80,7 +77,7 @@ public class BookController {
         try {
             List<Book> books = bookRepository.findByPublicationDate(LocalDateTime.parse(publicationDate));
             if (books.isEmpty()) {
-                throw new NotFoundException(String.format("No book with publicationDate %d exists.", publicationDate));
+                throw new NotFoundException(String.format("No book with publicationDate"+publicationDate+" exists."));
             }
             logger.info("Returning all books with a publicationDate on the: {}  which are: {}.", publicationDate, books);
             return Response.status(Response.Status.OK).entity("Books with a publicationDate on the: "+publicationDate+" which are: "+books).build();
@@ -98,10 +95,10 @@ public class BookController {
     public Response getBookByTitle(@PathParam("title") @Valid String title) {//2-mal Lesen basierend auf einem Filter (einmal Datum, einmal Text)
         List<Book> books = bookRepository.findByTitle(title);
         if (books.isEmpty()) {
-            throw new NotFoundException(String.format("No book with title %d exists.", title));
+            throw new NotFoundException(String.format("No book with title "+title+" exists."));
         }
         logger.info("Returning all books with title:  {} which are: {}.", title, books);
-        return Response.status(Response.Status.OK).entity("Books with title:  "+title+" which are: "+books).build();
+        return Response.status(Response.Status.OK).entity(String.format("Books with title: {} which are: {}",title,books)).build();
     }//http://localhost:8080/artifact/resources/book/title:It
 
 
@@ -143,14 +140,14 @@ public class BookController {
         }
 
         if (!conflictingBooks.isEmpty()) {
-            return Response.status(Response.Status.CONFLICT).entity(conflictingBooks).build();
+            return Response.status(Response.Status.CONFLICT).entity("All books must be correct, the following book ids already exist: "+conflictingBooks).build();
         }
 
         for (Book book : books) {
-            saveOrUpdate(book, "Insert");
+             saveOrUpdate(book, "Insert");
         }
 
-        return Response.status(Response.Status.CREATED).entity(books).build();
+        return Response.status(Response.Status.OK).entity(books).build();
     }
 
 
