@@ -62,7 +62,7 @@ public class BookController {
     @GET
     @RolesAllowed({"ADMIN", "USER"})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllBook() {//Alle Datensätze lesen
+    public Response getAllBooks() {//Alle Datensätze lesen
         List<Book> books = bookRepository.findAll();
         logger.info("Returning all {} book/s.", books.size());
         return Response.status(Response.Status.OK).entity(books).build();
