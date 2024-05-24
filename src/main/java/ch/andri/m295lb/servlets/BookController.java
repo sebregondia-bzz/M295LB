@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -63,7 +64,10 @@ public class BookController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllBook() {//Alle Datensätze lesen
         List<Book> books = bookRepository.findAll();
-        logger.info("Returning all books...");
+        if (books.isEmpty()) {
+            throw new NotFoundException(String.format("No books are existing."));
+        }
+        logger.info("Returning all books: "+books);
         return Response.status(Response.Status.OK).entity(books).build();
     }//http://localhost:8080/artifact/resources/book
 
@@ -73,9 +77,18 @@ public class BookController {
     @Path("/publicationDate/{publicationDate}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBookByPublicationDate(@PathParam("publicationDate") @Valid String publicationDate) {//2-mal Lesen basierend auf einem Filter (einmal Datum, einmal Text)
-        List<Book> books = bookRepository.findByPublicationDate(LocalDateTime.parse(publicationDate));
-        logger.info("Returning all books with a publicationDate on the: {}  which are: {}.", publicationDate, books);
-        return Response.status(Response.Status.OK).entity("Books with a publicationDate on the: "+publicationDate+" which are: "+books).build();
+        try {
+            List<Book> books = bookRepository.findByPublicationDate(LocalDateTime.parse(publicationDate));
+            if (books.isEmpty()) {
+                throw new NotFoundException(String.format("No book with publicationDate %d exists.", publicationDate));
+            }
+            logger.info("Returning all books with a publicationDate on the: {}  which are: {}.", publicationDate, books);
+            return Response.status(Response.Status.OK).entity("Books with a publicationDate on the: "+publicationDate+" which are: "+books).build();
+
+        }catch (DateTimeParseException e){
+            logger.error("Invalid publicationDate format: {}", publicationDate);
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid publicationDate format. Please use the format, example 1900-06-26T00:00:00").build();
+        }
     }//http://localhost:8080/artifact/resources/book/publicationDate/1997-06-26T00:00:00
 
     @GET
@@ -84,6 +97,9 @@ public class BookController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getBookByTitle(@PathParam("title") @Valid String title) {//2-mal Lesen basierend auf einem Filter (einmal Datum, einmal Text)
         List<Book> books = bookRepository.findByTitle(title);
+        if (books.isEmpty()) {
+            throw new NotFoundException(String.format("No book with title %d exists.", title));
+        }
         logger.info("Returning all books with title:  {} which are: {}.", title, books);
         return Response.status(Response.Status.OK).entity("Books with title:  "+title+" which are: "+books).build();
     }//http://localhost:8080/artifact/resources/book/title:It
